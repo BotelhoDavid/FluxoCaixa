@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/1 - API/">
+    <Project Path="src/FluxoCaixa.API/FluxoCaixa.API.csproj" />
+  </Folder>
+  <Folder Name="/2 - Application/">
+    <Project Path="src/FluxoCaixa.Application/FluxoCaixa.Application.csproj" />
+  </Folder>
+  <Folder Name="/3 - Domain/">
+    <Project Path="src/FluxoCaixa.Domain/FluxoCaixa.Domain.csproj" />
+  </Folder>
+  <Folder Name="/4 - Infra/" />
+  <Folder Name="/4 - Infra/4.1 - Data/">
+    <Project Path="src/FluxoCaixa.Infra.Data/FluxoCaixa.Infra.Data.csproj" />
+  </Folder>
+  <Folder Name="/4 - Infra/4.2 - CrossCutings/">
+    <Project Path="src/FluxoCaixa.Infra.CrossCutting.ExceptionHandler/FluxoCaixa.Infra.CrossCutting.ExceptionHandler.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FluxoCaixa.Tests/FluxoCaixa.Tests.csproj" />
+  </Folder>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+</Solution>

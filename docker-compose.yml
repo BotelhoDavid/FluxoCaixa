@@ -1,0 +1,54 @@
+services:
+  api:
+    image: ${DOCKER_REGISTRY-}fluxocaixaapi
+    container_name: fluxocaixa-api
+    build:
+      context: .
+      dockerfile: src/FluxoCaixa.API/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_DATA_SOURCE=sqlserver
+      - DB_CATALOG=fluxocaixaDb
+      - DB_DATABASE_USER=sa
+      - DB_DATABASE_USER_PASSWORD=YourPassword123!
+      - OIDC__Authority=http://keycloak:8080/realms/FluxoCaixa
+      - OIDC__Audience=fluxo-caixa-api
+    depends_on:
+      - sqlserver
+      - keycloak
+    networks:
+      - fluxocaixa-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fluxocaixa-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourPassword123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlvolume:/var/opt/mssql
+    networks:
+      - fluxocaixa-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: fluxocaixa-keycloak
+    command: start-dev
+    ports:
+      - "8081:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    networks:
+      - fluxocaixa-network
+
+volumes:
+  sqlvolume:
+
+networks:
+  fluxocaixa-network:
+    driver: bridge

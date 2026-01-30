@@ -1,0 +1,31 @@
+# .gitignore
+
+# Build
+bin/
+obj/
+
+# User-specific
+*.user
+*.swp
+*.suo
+*.userosscache
+*.uaproj.user
+*.vs/
+
+# Logs
+*.log
+
+# Secrets
+appsettings.Development.json
+appsettings.Local.json
+
+# Docker
+*.pid
+
+# Rider / VSCode
+.idea/
+.vscode/
+
+# Other
+*.DS_Store
+build_errors_*.txt
