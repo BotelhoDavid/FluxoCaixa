@@ -35,7 +35,7 @@ namespace FluxoCaixa.Infra.Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     SenhaHash = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
                     Ativo = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     DataUltimoAcesso = table.Column<DateTime>(type: "datetime2", nullable: true),

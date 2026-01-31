@@ -82,6 +82,11 @@ namespace FluxoCaixa.Infra.Data.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -89,34 +94,14 @@ namespace FluxoCaixa.Infra.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.ToTable("Usuarios", (string)null);
                 });
 
             modelBuilder.Entity("FluxoCaixa.Domain.Entities.Usuario", b =>
                 {
-                    b.OwnsOne("FluxoCaixa.Domain.ValueObjects.Email", "Email", b1 =>
-                        {
-                            b1.Property<Guid>("UsuarioId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Endereco")
-                                .IsRequired()
-                                .HasMaxLength(256)
-                                .HasColumnType("nvarchar(256)")
-                                .HasColumnName("Email");
-
-                            b1.HasKey("UsuarioId");
-
-                            b1.HasIndex("Endereco")
-                                .IsUnique()
-                                .HasDatabaseName("IX_Usuarios_Email");
-
-                            b1.ToTable("Usuarios");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UsuarioId");
-                        });
-
                     b.OwnsOne("FluxoCaixa.Domain.ValueObjects.SenhaHash", "SenhaHash", b1 =>
                         {
                             b1.Property<Guid>("UsuarioId")
@@ -135,9 +120,6 @@ namespace FluxoCaixa.Infra.Data.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("UsuarioId");
                         });
-
-                    b.Navigation("Email")
-                        .IsRequired();
 
                     b.Navigation("SenhaHash")
                         .IsRequired();

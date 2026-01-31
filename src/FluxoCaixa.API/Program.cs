@@ -23,6 +23,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = FluxoCaixaContext.GetConnectionStringFromEnvironment();
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+
+builder.Services.AddDbContext<FluxoCaixaContext>(options =>
+    options.UseSqlServer(connectionString));
+
 // Configuração do Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -51,11 +61,16 @@ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add services to the container.
-builder.Services.AddControllers()
+builder.Services.AddControllers(options =>
+                {
+                    options.ModelBinderProviders.Insert(0, new FluxoCaixa.API.Binders.DateTimeModelBinderProvider());
+                })
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.Converters.Add(
                         new System.Text.Json.Serialization.JsonStringEnumConverter());
+                    options.JsonSerializerOptions.Converters.Add(
+                        new FluxoCaixa.API.Converters.DateTimeJsonConverter());
                 })
                 .ConfigureApiBehaviorOptions(options =>
                 {
@@ -89,31 +104,6 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "API para gerenciamento de fluxo de caixa"
     });
-
-    //options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    //{
-    //    Description = "Adicione o Token de Autorização.",
-    //    Name = "Authorization",
-    //    In = ParameterLocation.Header,
-    //    Type = SecuritySchemeType.Http,
-    //    Scheme = "bearer",
-    //    BearerFormat = "JWT"
-    //});
-
-    //options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    //{
-    //    {
-    //        new OpenApiSecurityScheme
-    //        {
-    //            Reference = new OpenApiReference
-    //            {
-    //                Type = ReferenceType.SecurityScheme,
-    //                Id = "Bearer"
-    //            }
-    //        },
-    //        Array.Empty<string>()
-    //    }
-    //});
 
     options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
     {
@@ -169,17 +159,6 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// DbContext
-var connectionString = FluxoCaixaContext.GetConnectionStringFromEnvironment();
-
-if (string.IsNullOrEmpty(connectionString))
-{
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-}
-
-builder.Services.AddDbContext<FluxoCaixaContext>(options =>
-    options.UseSqlServer(connectionString));
-
 // Exception Handler
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -205,26 +184,51 @@ if (app.Environment.IsDevelopment())
 }
 
 // Apply migrations automatically
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<FluxoCaixaContext>();
-    try
-    {
-        db.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Erro ao aplicar migrations: {ex.Message}");
-    }
-}
+await ApplyMigrationsAsync(app);
 
 app.UseExceptionHandler();
-
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+
+static async Task ApplyMigrationsAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var db = scope.ServiceProvider.GetRequiredService<FluxoCaixaContext>();
+
+    var maxRetries = 10;
+    var delay = TimeSpan.FromSeconds(5);
+
+    for (int attempt = 1; attempt <= maxRetries; attempt++)
+    {
+        try
+        {
+            logger.LogInformation("Tentativa {Attempt}/{MaxRetries}: Aplicando migrations...", attempt, maxRetries);
+
+            await db.Database.MigrateAsync();
+
+            logger.LogInformation("Migrations aplicadas com sucesso.");
+            return;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex,
+                "Erro ao conectar no banco (Tentativa {Attempt}/{MaxRetries}).",
+                attempt, maxRetries);
+
+            if (attempt == maxRetries)
+            {
+                logger.LogCritical(ex,
+                    "Não foi possível aplicar migrations após {MaxRetries} tentativas.",
+                    maxRetries);
+                throw;
+            }
+
+            await Task.Delay(delay);
+        }
+    }
+}
 
 app.Run();

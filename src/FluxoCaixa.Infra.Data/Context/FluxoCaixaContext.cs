@@ -31,22 +31,36 @@ namespace FluxoCaixa.Infra.Data.Context
         {
             if (!optionsBuilder.IsConfigured)
             {
-                IConfigurationRoot _configuracaoBuilder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                                                                                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-                                                                                    .AddJsonFile($"appsettings.json", optional: true, reloadOnChange: false)
-                                                                                    .Build();
+                var connString = GetConnectionStringFromEnvironment();
 
-                optionsBuilder.UseSqlServer(GetConnectionStringFromEnvironment())
+                if (string.IsNullOrEmpty(connString))
+                {
+                    IConfigurationRoot config = new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json", optional: true)
+                        .AddJsonFile("src/FluxoCaixa.API/appsettings.json", optional: true) // Fallback para rodar da raiz
+                        .Build();
+                    
+                    connString = config.GetConnectionString("DefaultConnection");
+                }
+
+                optionsBuilder.UseSqlServer(connString)
                               .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
                 optionsBuilder.EnableSensitiveDataLogging();
             }
         }
 
-        public static string GetConnectionStringFromEnvironment()
+        public static string? GetConnectionStringFromEnvironment()
         {
             IDictionary _envVars = Environment.GetEnvironmentVariables();
-            string _dataSource = _envVars["DB_DATA_SOURCE"]?.ToString() ?? "";
+            string? _dataSource = _envVars["DB_DATA_SOURCE"]?.ToString();
+            
+            if (string.IsNullOrEmpty(_dataSource))
+            {
+                return null;
+            }
+
             string _dataBase = _envVars["DB_CATALOG"]?.ToString() ?? "";
             string _user = _envVars["DB_DATABASE_USER"]?.ToString() ?? "";
             string _password = _envVars["DB_DATABASE_USER_PASSWORD"]?.ToString() ?? "";
@@ -55,13 +69,13 @@ namespace FluxoCaixa.Infra.Data.Context
 
             _connectionStringBuilder.DataSource = _dataSource;
             _connectionStringBuilder.InitialCatalog = _dataBase;
-            _connectionStringBuilder.IntegratedSecurity = true;
+            _connectionStringBuilder.IntegratedSecurity = false;
             _connectionStringBuilder.PersistSecurityInfo = false;
             _connectionStringBuilder.UserID = _user;
             _connectionStringBuilder.Password = _password;
             _connectionStringBuilder.MultipleActiveResultSets = false;
             _connectionStringBuilder.Encrypt = false;
-            _connectionStringBuilder.TrustServerCertificate = false;
+            _connectionStringBuilder.TrustServerCertificate = true;
             _connectionStringBuilder.Add(keyword: "Trusted_Connection", value: false);
             _connectionStringBuilder.Pooling = true;
             _connectionStringBuilder.MaxPoolSize = 5000;

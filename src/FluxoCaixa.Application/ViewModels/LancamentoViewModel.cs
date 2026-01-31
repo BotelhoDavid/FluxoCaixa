@@ -22,7 +22,7 @@ namespace FluxoCaixa.Application.ViewModels
         /// <summary>
         /// Data e hora do lançamento
         /// </summary>
-        /// <example>2024-01-29T14:30:00</example>
+        /// <example>29-01-2024</example>
         [SwaggerSchema(Description = "Data e hora do lançamento")]
         public DateTime DataLancamento { get; set; }
 

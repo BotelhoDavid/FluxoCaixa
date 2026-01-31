@@ -11,7 +11,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - DB_DATA_SOURCE=sqlserver
       - DB_CATALOG=fluxocaixaDb
-      - DB_DATABASE_USER=sa
+      - DB_DATABASE_USER=SA
       - DB_DATABASE_USER_PASSWORD=YourPassword123!
       - OIDC__Authority=http://keycloak:8080/realms/FluxoCaixa
       - OIDC__Audience=fluxo-caixa-api
@@ -48,6 +48,7 @@ services:
 
 volumes:
   sqlvolume:
+
 
 networks:
   fluxocaixa-network:

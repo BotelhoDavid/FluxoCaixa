@@ -24,6 +24,7 @@ API robusta para controle de fluxo de caixa, desenvolvida com as melhores práti
   - **SOLID**: Princípios de design orientado a objetos.
   - **Clean Code**: Código legível e manutenível.
 - **Tests**: Testes unitários com xUnit, Moq e FluentAssertions.
+- **Date Handling**: Suporte customizado para inputs no formato brasileiro `dd-mm-yyyy`.
 
 ---
 
@@ -131,18 +132,37 @@ Gera e baixa um arquivo Excel (.xlsx) com os lançamentos de um dia específico,
 
 ## 🛠️ Como Executar
 
-### Pré-requisitos
-- .NET SDK (versão 10 ou superior)
-- SQL Server
+A aplicação está configurada para criar o banco de dados e aplicar as migrations automaticamente em ambas as formas de execução abaixo.
 
-### Passos
-1. Clone o repositório.
-2. Configure a string de conexão no `Program.cs` ou variáveis de ambiente.
-3. Execute a aplicação:
+### 🐳 Via Docker Compose (Recomendado)
+Orquestra a API, SQL Server e Keycloak automaticamente com suporte a resiliência de conexão.
+
+1. Na raiz do projeto, execute:
+   ```bash
+   docker-compose up --build -d
+   ```
+2. A API aguardará o banco de dados estar disponível através de uma política de retentativas automática.
+3. Acesse: [Documentação (Scalar)](http://localhost:5000/scalar/v1)
+
+---
+
+### 💻 Via Terminal (Local)
+Para rodar localmente, verifique se você tem o SQL Server e Keycloak ativos em sua máquina.
+
+1. **Configuração**: Verifique a Connection String no arquivo `src/FluxoCaixa.API/appsettings.json`.
+2. **Execução**: Na raiz do projeto, execute:
    ```bash
    dotnet run --project src/FluxoCaixa.API
    ```
-4. Acesse a documentação (Scalar) em: `http://localhost:5000/scalar/v1`
+3. **Automação**: Ao iniciar, a aplicação verificará se o banco existe. Se não existir, ele será criado e todas as migrations pendentes serão aplicadas automaticamente.
+
+---
+
+### 📡 Endereços dos Serviços
+- **FluxoCaixa API**: [http://localhost:5000](http://localhost:5000)
+- **Documentação (Scalar)**: [http://localhost:5000/scalar/v1](http://localhost:5000/scalar/v1)
+- **Keycloak (Auth)**: [http://localhost:8081](http://localhost:8081)
+- **SQL Server**: `localhost,1433` (User: `sa`, Pass: `YourPassword123!`)
 
 ---
 

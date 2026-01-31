@@ -113,8 +113,10 @@ Contém as regras de negócio puras e imutáveis em relação à tecnologia.
 ### 4. Camada de Infraestrutura
 Implementa as interfaces definidas pelo domínio e lida com detalhes técnicos.
 - **Repositories**: Usam Entity Framework Core para acesso a dados.
-- **PasswordHasher**: Implementação concreta usando `Microsoft.AspNetCore.Identity` para hash seguro, mas encapsulado para não poluir o domínio.
-- **FluxoCaixaContext**: Contexto do EF Core, mapeando as entidades e VOs (como `OwnsOne` para `SenhaHash`).
+- **PasswordHasher**: Implementação concreta usando `Microsoft.AspNetCore.Identity` para hash seguro.
+- **FluxoCaixaContext**: Contexto do EF Core com mapeamento automático de entidades e Value Objects.
+- **Resiliência**: Lógica de retentativa (Retry Policy) na inicialização para aguardar o SQL Server ficar pronto no Docker.
+- **Serialização**: Customização global de JSON e Model Binding para aceitar o formato de data brasileiro `dd-mm-yyyy`.
 
 ---
 

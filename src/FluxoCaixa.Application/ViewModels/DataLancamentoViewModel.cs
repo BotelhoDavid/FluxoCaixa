@@ -7,14 +7,14 @@ namespace FluxoCaixa.Application.ViewModels
         /// <summary>
         /// Data inicial para filtro (opcional)
         /// </summary>
-        /// <example>2024-01-01</example>
+        /// <example>01-01-2024</example>
         [SwaggerSchema(Description = "Data inicial para filtro (opcional)")]
         public DateTime? DataInicial { get; set; }
 
         /// <summary>
         /// Data final para filtro (opcional)
         /// </summary>
-        /// <example>2024-01-31</example>
+        /// <example>31-01-2024</example>
         [SwaggerSchema(Description = "Data final para filtro (opcional)")]
         public DateTime? DataFinal { get; set; }
 

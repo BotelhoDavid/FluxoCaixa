@@ -22,11 +22,16 @@ namespace FluxoCaixa.API.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation(Summary = "Listar lançamentos", Description = "Retorna uma lista de lançamentos filtrados por período.")]
+        [SwaggerOperation(
+            Summary = "Listar lançamentos", 
+            Description = "Retorna uma lista de lançamentos financeiros. É possível filtrar por período (Data Inicial e Final)."
+        )]
         [ProducesResponseType(typeof(List<LancamentoViewModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiException), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ApiException), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Get([FromQuery] DataLancamentoViewModel data)
+        public async Task<IActionResult> Get(
+            [FromQuery, SwaggerParameter("Parâmetros de filtro por data (padrão dd-mm-yyyy)", Required = false)] 
+            DataLancamentoViewModel data)
         {
             var lancamentos = await _service.ObterLancamentosAsync(data);
             return Ok(lancamentos);
@@ -45,12 +50,17 @@ namespace FluxoCaixa.API.Controllers
         }
 
         [HttpGet("relatorio")]
-        [SwaggerOperation(Summary = "Gerar relatório Excel", Description = "Gera um arquivo Excel (.xlsx) contendo os lançamentos e o saldo final para a data informada.")]
+        [SwaggerOperation(
+            Summary = "Gerar relatório consolidado (Excel)", 
+            Description = "Gera e faz o download de um arquivo Excel (.xlsx) contendo o detalhamento de todos os lançamentos de um dia específico, além do cálculo automático do saldo consolidado."
+        )]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         [ProducesResponseType(typeof(ApiException), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ApiException), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiException), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GerarRelatorio([FromQuery] DateTime data)
+        public async Task<IActionResult> GerarRelatorio(
+            [FromQuery, SwaggerParameter("Data do relatório no formato dd-mm-yyyy (Ex: 30-01-2024)", Required = true)] 
+            DateTime data)
         {
             var arquivo = await _service.GerarRelatorioAsync(data);
             return File(arquivo, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"relatorio_fluxocaixa_{data:ddMMyyyy}.xlsx");
